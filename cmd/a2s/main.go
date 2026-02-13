@@ -56,9 +56,10 @@ type PingCommand struct {
 
 // GlobalOptions defines global CLI options applicable to all commands.
 type GlobalOptions struct {
-	Format  string `short:"f" long:"format" default:"table" description:"Output format" choice:"json" choice:"table" choice:"raw" choice:"md" choice:"html"`
-	Timeout int    `short:"t" long:"timeout" default:"3" description:"Set connection timeout in seconds"`
-	Buffer  uint16 `short:"b" long:"buffer-size" default:"8096" description:"Set connection buffer size"`
+	Format           string `short:"f" long:"format" default:"table" description:"Output format" choice:"json" choice:"table" choice:"raw" choice:"md" choice:"html"`
+	Timeout          int    `short:"t" long:"timeout" default:"3" description:"Set connection timeout in seconds"`
+	Buffer           uint16 `short:"b" long:"buffer-size" default:"8096" description:"Set connection buffer size"`
+	ShowRawResponses bool   `long:"show-raw-responses" description:"Show hex dump of raw responses on protocol errors"`
 }
 
 // ServerArgs defines positional arguments for server connection.
@@ -115,7 +116,7 @@ func main() {
 	}
 }
 
-func createClient(host, port string, timeout int, buffer uint16) *a2s.Client {
+func createClient(host, port string, timeout int, buffer uint16, showRawResponses bool) *a2s.Client {
 	address := host
 	if port != "" {
 		address = host + ":" + port
@@ -130,6 +131,7 @@ func createClient(host, port string, timeout int, buffer uint16) *a2s.Client {
 		client.SetDeadlineTimeout(timeout)
 	}
 	client.SetBufferSize(buffer)
+	client.SetShowRawResponses(showRawResponses)
 
 	return client
 }

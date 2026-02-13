@@ -16,7 +16,7 @@ func executeInfo(cmd *InfoCommand) {
 		fatal("Host must be provided")
 	}
 
-	client := createClient(cmd.Args.Host, cmd.Args.Port, cmd.Timeout, cmd.Buffer)
+	client := createClient(cmd.Args.Host, cmd.Args.Port, cmd.Timeout, cmd.Buffer, cmd.ShowRawResponses)
 	defer closeClient(client)
 
 	info, err := client.GetInfo()
