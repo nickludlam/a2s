@@ -9,7 +9,7 @@ func executePing(cmd *PingCommand) {
 		fatal("Host must be provided")
 	}
 
-	client := createClient(cmd.Args.Host, cmd.Args.Port, cmd.Timeout, cmd.Buffer)
+	client := createClient(cmd.Args.Host, cmd.Args.Port, cmd.Timeout, cmd.Buffer, cmd.ShowRawResponses)
 	defer closeClient(client)
 
 	ping.Start(client, cmd.PingCount, cmd.PingPeriod)

@@ -9,13 +9,14 @@ import (
 
 // Client handles UDP connection and A2S protocol queries.
 type Client struct {
-	Conn       *net.UDPConn
-	Address    *net.UDPAddr
-	packetsBuf map[int][]byte
-	parseData  []byte
-	readBuf    []byte
-	Timeout    time.Duration
-	BufferSize uint16
+	Conn             *net.UDPConn
+	Address          *net.UDPAddr
+	packetsBuf       map[int][]byte
+	parseData        []byte
+	readBuf          []byte
+	Timeout          time.Duration
+	BufferSize       uint16
+	ShowRawResponses bool
 }
 
 // New creates a new client with IP and port and opens UDP connection.
@@ -85,6 +86,11 @@ func (c *Client) SetDeadlineTimeout(seconds int) {
 	c.Timeout = time.Duration(seconds) * time.Second
 }
 
+// SetShowRawResponses enables hex dump output on protocol errors.
+func (c *Client) SetShowRawResponses(show bool) {
+	c.ShowRawResponses = show
+}
+
 // Close closes UDP connection.
 func (c *Client) Close() error {
 	return c.Conn.Close()
@@ -111,7 +117,7 @@ func (c *Client) Get(requestType Flag) ([]byte, Flag, time.Duration, error) {
 			flag = Flag(resp[4])
 		}
 
-		if err := validateResponseType(requestType, flag); err != nil {
+		if err := validateResponseType(requestType, flag, resp, c.ShowRawResponses); err != nil {
 			if requestType == RulesRequest && (flag == infoResponseSource || flag == infoResponseGoldSource || flag == challengeResponse) {
 				lastErr = err
 				continue
@@ -159,7 +165,7 @@ func (c *Client) request(requestType Flag, challenge uint32) ([]byte, time.Durat
 			return nil, 0, err
 		}
 
-		multi, err := isMultiPacket(resp[:n])
+		multi, err := isMultiPacket(resp[:n], c.ShowRawResponses)
 		if err != nil && errors.Is(err, ErrMultiPacket) && multi {
 			continue // Some servers send a truncated split packet first; read again.
 		}
@@ -168,7 +174,7 @@ func (c *Client) request(requestType Flag, challenge uint32) ([]byte, time.Durat
 
 	duration := time.Since(start)
 
-	multi, err := isMultiPacket(resp[:n])
+	multi, err := isMultiPacket(resp[:n], c.ShowRawResponses)
 	if err != nil {
 		result := make([]byte, n)
 		copy(result, resp[:n])

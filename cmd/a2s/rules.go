@@ -35,7 +35,7 @@ func executeRules(cmd *RulesCommand) {
 		fatal("Host must be provided")
 	}
 
-	client := createClient(cmd.Args.Host, cmd.Args.Port, cmd.Timeout, cmd.Buffer)
+	client := createClient(cmd.Args.Host, cmd.Args.Port, cmd.Timeout, cmd.Buffer, cmd.ShowRawResponses)
 	defer closeClient(client)
 
 	formatter := NewFormatter(cmd.Format)
